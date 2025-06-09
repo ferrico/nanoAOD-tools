@@ -2,6 +2,18 @@
 <use name="hepmc"/>
 <use name="CondFormats/JetMETObjects"/>
 <use name="JetMETCorrections/Modules"/>
+<use name="correctionlib"/>
+<library name="PhysicsToolsNanoAODTools"
+         file="src/HelperFunction.cc src/KinZfitter.cc src/H4LTools.cc src/GenAnalysis.cc">
+  <flags EDM_PLUGIN="1"/>
+</library>
+
+<export>
+  <lib name="PhysicsToolsNanoAODTools"/>
+</export>
+
+<!--
 <export>
   <lib   name="1"/>
 </export>
+-->

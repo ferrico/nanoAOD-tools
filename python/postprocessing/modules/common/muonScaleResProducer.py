@@ -4,7 +4,9 @@ import ROOT
 import os
 import random
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-
+from ROOT import MuonScaRe
+import numpy as np
+from math import pi
 
 def mk_safe(fct, *args):
     try:
@@ -21,15 +23,20 @@ def mk_safe(fct, *args):
 
 
 class muonScaleResProducer(Module):
-    def __init__(self, rc_dir, rc_corrections, dataYear):
-        p_postproc = '%s/src/PhysicsTools/NanoAODTools/python/postprocessing' % os.environ[
-            'CMSSW_BASE']
-        p_roccor = p_postproc + '/data/' + rc_dir
-        if "/RoccoR_cc.so" not in ROOT.gSystem.GetLibraries():
-            p_helper = '%s/RoccoR.cc' % p_roccor
-            print('Loading C++ helper from ' + p_helper)
-            ROOT.gROOT.ProcessLine('.L ' + p_helper)
-        self._roccor = ROOT.RoccoR(p_roccor + '/' + rc_corrections)
+    def __init__(self, rc_corrections, dataYear):
+        #p_postproc = '%s/src/PhysicsTools/NanoAODTools/python/postprocessing' % os.environ[
+        #        p_postproc = '%s/src/PhysicsTools/NanoAODTools/src/' % os.environ[
+        #                'CMSSW_BASE']
+        #        p_roccor = p_postproc + '/data'
+        #        p_roccor = p_postproc
+        #        if "/MuonScaRe_cc.so" not in ROOT.gSystem.GetLibraries():
+        #            p_helper = '%s/MuonScaRe.cc' % p_roccor
+        #            print('Loading C++ helper from ' + p_helper)
+        #            ROOT.gROOT.ProcessLine('.L ' + p_helper)
+        #        self._roccor = MuonScaRe(rc_corrections)
+        json = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/analysis/nanoAOD_skim/corrections/%s" % (os.environ['CMSSW_BASE'], rc_corrections) 
+        print (json)
+        self.corrModule = MuonScaRe(json)
 
     def beginJob(self):
         pass
@@ -39,66 +46,90 @@ class muonScaleResProducer(Module):
 
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         self.out = wrappedOutputTree
-        self.out.branch("Muon_corrected_pt", "F", lenVar="nMuon")
-        self.out.branch("Muon_correctedUp_pt", "F", lenVar="nMuon")
-        self.out.branch("Muon_correctedDown_pt", "F", lenVar="nMuon")
+        self.out.branch("Muon_pt", "F", lenVar="nMuon")
+        self.out.branch("Muon_uncorrected_pt", "F", lenVar="nMuon")
+        self.out.branch("Muon_pt_scaleUP", "F", lenVar="nMuon")
+        self.out.branch("Muon_pt_scaleDOWN", "F", lenVar="nMuon")
+        self.out.branch("Muon_pt_resUP", "F", lenVar="nMuon")
+        self.out.branch("Muon_pt_resDOWN", "F", lenVar="nMuon")
+
         self.is_mc = bool(inputTree.GetBranch("GenJet_pt"))
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         pass
 
+    def getPtCorr(self, muon) :
+        
+        if muon.pt < 26 or muon.pt > 200:
+            return muon.pt
+        
+        isData = int(not self.is_mc)
+        
+        scale_corr = self.corrModule.pt_scale(isData, muon.pt, muon.eta, muon.phi, muon.charge)
+        pt_corr = scale_corr
+
+        if self.is_mc:
+            smear_corr = self.corrModule.pt_resol(scale_corr, muon.eta, muon.nTrackerLayers)
+            pt_corr = smear_corr
+
+        return pt_corr
+
+    def getPtCorrScaleVar(self, muon, updn) :
+        
+        if muon.pt < 26 or muon.pt > 200:
+            return muon.pt
+        
+        scale_corr = self.corrModule.pt_scale_var(muon.pt, muon.eta, muon.phi, muon.charge, updn)
+        pt_corr = scale_corr
+
+        return pt_corr
+
+    def getPtCorrResVar(self, muon, pt_corrected, updn) :
+
+        if muon.pt < 26 or muon.pt > 200:
+            return muon.pt
+
+        scale_corr = self.corrModule.pt_resol_var(muon.pt, pt_corrected, muon.eta, updn)
+        pt_corr = scale_corr
+
+        return pt_corr
+
     def analyze(self, event):
         muons = Collection(event, "Muon")
-        if self.is_mc:
-            genparticles = Collection(event, "GenPart")
-        roccor = self._roccor
-        if self.is_mc:
-            pt_corr = []
-            pt_err = []
-            for mu in muons:
-                genIdx = mu.genPartIdx
-                if genIdx >= 0 and genIdx < len(genparticles):
-                    genMu = genparticles[genIdx]
-                    pt_corr.append(mu.pt *
-                                   mk_safe(roccor.kSpreadMC, mu.charge, mu.pt,
-                                           mu.eta, mu.phi, genMu.pt))
-                    pt_err.append(mu.pt *
-                                  mk_safe(roccor.kSpreadMCerror, mu.charge,
-                                          mu.pt, mu.eta, mu.phi, genMu.pt))
-                else:
-                    u1 = random.uniform(0.0, 1.0)
-                    pt_corr.append(
-                        mu.pt * mk_safe(roccor.kSmearMC, mu.charge, mu.pt,
-                                        mu.eta, mu.phi, mu.nTrackerLayers, u1))
-                    pt_err.append(
-                        mu.pt * mk_safe(roccor.kSmearMCerror, mu.charge, mu.pt,
-                                        mu.eta, mu.phi, mu.nTrackerLayers, u1))
 
-        else:
-            pt_corr = list(
-                mu.pt *
-                mk_safe(roccor.kScaleDT, mu.charge, mu.pt, mu.eta, mu.phi)
-                for mu in muons)
-            pt_err = list(
-                mu.pt *
-                mk_safe(roccor.kScaleDTerror, mu.charge, mu.pt, mu.eta, mu.phi)
-                for mu in muons)
+        pt_corr = [0.]*len(muons)
+        pt_resolUP = [0.]*len(muons)
+        pt_resolDOWN = [0.]*len(muons)
+        pt_scaleUP = [0.]*len(muons)
+        pt_scaleDOWN = [0.]*len(muons)
 
-        self.out.fillBranch("Muon_corrected_pt", pt_corr)
-        pt_corr_up = list(
-            max(pt_corr[imu] + pt_err[imu], 0.0)
-            for imu, mu in enumerate(muons))
-        pt_corr_down = list(
-            max(pt_corr[imu] - pt_err[imu], 0.0)
-            for imu, mu in enumerate(muons))
-        self.out.fillBranch("Muon_correctedUp_pt", pt_corr_up)
-        self.out.fillBranch("Muon_correctedDown_pt", pt_corr_down)
+        isData = int(not self.is_mc)
+
+        for imu, muon in enumerate(muons):
+            seedSeq = np.random.SeedSequence([event.luminosityBlock, event.event, int(abs((muon.phi/pi*100.)%1)*1e10), 351740215])
+            self.corrModule.setSeed(int(seedSeq.generate_state(1,np.uint64)[0]))
+
+            pt_corr[imu] = self.getPtCorr(muon)
+            pt_resolUP[imu] = self.getPtCorrResVar(muon, pt_corr[imu], "up")
+            pt_resolDOWN[imu] = self.getPtCorrResVar(muon, pt_corr[imu], "dn")
+            pt_scaleUP[imu] = self.getPtCorrScaleVar(muon, "up")
+            pt_scaleDOWN[imu] = self.getPtCorrScaleVar(muon, "dn")
+
+            pt_uncorr = list(mu.pt for mu in muons)
+            self.out.fillBranch("Muon_uncorrected_pt", pt_uncorr)
+            self.out.fillBranch("Muon_pt", pt_corr)
+            self.out.fillBranch("Muon_pt_scaleUP", pt_scaleUP)
+            self.out.fillBranch("Muon_pt_scaleDOWN", pt_scaleDOWN)
+            self.out.fillBranch("Muon_pt_resUP", pt_resolUP)
+            self.out.fillBranch("Muon_pt_resDOWN", pt_resolDOWN)
+
         return True
 
 
-muonScaleRes2016 = lambda: muonScaleResProducer('roccor.Run2.v3',
-                                                'RoccoR2016.txt', 2016)
-muonScaleRes2017 = lambda: muonScaleResProducer('roccor.Run2.v3',
-                                                'RoccoR2017.txt', 2017)
-muonScaleRes2018 = lambda: muonScaleResProducer('roccor.Run2.v3',
-                                                'RoccoR2018.txt', 2018)
+muonScaleRes2016 = lambda: muonScaleResProducer('2022_schemaV2.json', 2016)
+muonScaleRes2017 = lambda: muonScaleResProducer('2022_schemaV2.json', 2017)
+muonScaleRes2018 = lambda: muonScaleResProducer("2022_schemaV2.json", 2022)
+muonScaleRes2022 = lambda: muonScaleResProducer("2022_Summer22.json", 2022)
+muonScaleRes2022EE = lambda: muonScaleResProducer("2022_Summer22EE.json", 2022)
+muonScaleRes2023 = lambda: muonScaleResProducer("2023_Summer23.json", 2023)
+muonScaleRes2023BPix = lambda: muonScaleResProducer("2023_Summer23BPix.json", 2023)
