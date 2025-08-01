@@ -1,8 +1,7 @@
 import os
 
 def getJetCorrected(era, tag, is_mc, overwritePt=True) :
-    #from PhysicsTools.NATModules.modules.jetCorr import jetJERC
-    from PhysicsTools.NanoAODTools.postprocessing.modules.common.jetCorr import jetJERC
+    from PhysicsTools.NATModules.modules.jetCorr import jetJERC
 
     if era not in [2022,2023]:
         raise ValueError("getJetCorrected: Era", era, "not supported")
@@ -32,7 +31,7 @@ def getJetCorrected(era, tag, is_mc, overwritePt=True) :
         ## Data
         ## JER are not applied to data
         else :
-            if ("2022C" in tag) or ("2022D" in tag):
+            if "pre_EE" in tag:
                 folderKey = "2022_Summer22"
                 L1Key = "Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFPuppi"
                 L2Key = "Summer22_22Sep2023_RunCD_V2_DATA_L2Relative_AK4PFPuppi"
@@ -99,7 +98,7 @@ def getJetCorrected(era, tag, is_mc, overwritePt=True) :
         ## Data
         ## JER are not applied to data
         else :
-            if "2023C" in tag:
+            if "pre_BPix" in tag:
                 folderKey = "2023_Summer23"
                 L1Key = "Summer23Prompt23_V2_DATA_L1FastJet_AK4PFPuppi"
                 L2Key = "Summer23Prompt23_V2_DATA_L2Relative_AK4PFPuppi"
