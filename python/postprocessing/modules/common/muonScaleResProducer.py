@@ -6,12 +6,12 @@ def getMuonScaleRes(era, tag, is_mc, overwritePt=True) :
         raise ValueError(f"getMuonScaleRes: Era {era} is not supported")
 
     if era == 2022:
-        if "pre_EE" in tag :
+        if not "EE" in tag :
             fname = "2022_Summer22.json"
         else :
             fname = "2022_Summer22EE.json"
     elif era == 2023:
-        if "pre_BPix" in tag:
+        if not "BPix" in tag:
             fname = "2023_Summer23.json"
         else:
             fname = "2023_Summer23BPix.json"

@@ -14,33 +14,36 @@ def getEleScaleRes(era, tag, is_mc, overwritePt=True, EtDependent=None):
 
     if era == 2022:
             if EtDependent:
-                if "pre_EE" in tag :
+                #if not "EE" in tag :
+                if 20220 == tag:
                     scaleKey = "EGMScale_Compound_Ele_2022preEE"
                     smearKey = "EGMSmearAndSyst_ElePTsplit_2022preEE" if is_mc else None
-                    fname = "electronSS_EtDependent_22preEE.json.gz"
+                    fname = "electronSS_EtDependent_22pre.json.gz"
                 else:
                     scaleKey = "EGMScale_Compound_Ele_2022postEE"
                     smearKey = "EGMSmearAndSyst_ElePTsplit_2022postEE" if is_mc else None
                     fname = "electronSS_EtDependent_22post.json.gz"
             else:
-                if "pre_EE" in tag :
+                #if not "EE" in tag :
+                if 20220 == tag:
                     scaleKey = "2022Re-recoBCD_ScaleJSON"
                     smearKey = "2022Re-recoBCD_SmearingJSON" if is_mc else None
-                    fname = "electronSS_Standard_22preEE.json.gz"
+                    fname = "electronSS_Standard_2022preEE.json.gz"
                 else:
                     scaleKey = "2022Re-recoE+PromptFG_ScaleJSON"
                     smearKey = "2022Re-recoE+PromptFG_SmearingJSON" if is_mc else None
-                    fname = "electronSS_Standard_22post.json.gz"
+                    fname = "electronSS_Standard_2022postEE.json.gz"
 
     elif era == 2023:
-        if "pre_BPix" in tag:
+        #if not "BPix" in tag:
+        if 20230 == tag:
             scaleKey = "EGMScale_Compound_Ele_2023preBPIX"
             smearKey = "EGMSmearAndSyst_ElePTsplit_2023preBPIX" if is_mc else None
-            fname = "electronSS_EtDependent_23preBPix.json.gz"
+            fname = "electronSS_EtDependent_23preBPIX.json.gz"
         else:
             scaleKey = "EGMScale_Compound_Ele_2023postBPIX"
             smearKey = "EGMSmearAndSyst_ElePTsplit_2023postBPIX" if is_mc else None
-            fname = "electronSS_EtDependent_23postBPix.json.gz"
+            fname = "electronSS_EtDependent_23postBPIX.json.gz"
  
     json = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/analysis/nanoAOD_skim/corrections/%s" % (os.environ['CMSSW_BASE'], fname)
 

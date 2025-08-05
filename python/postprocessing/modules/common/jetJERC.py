@@ -8,7 +8,7 @@ def getJetCorrected(era, tag, is_mc, overwritePt=True) :
 
     if era == 2022:
         if is_mc :
-            if "pre_EE" in tag:
+            if not "EE" in tag:
                 folderKey = "2022_Summer22"
                 L1Key = "Summer22_22Sep2023_V2_MC_L1FastJet_AK4PFPuppi"
                 L2Key = "Summer22_22Sep2023_V2_MC_L2Relative_AK4PFPuppi"
@@ -31,17 +31,7 @@ def getJetCorrected(era, tag, is_mc, overwritePt=True) :
         ## Data
         ## JER are not applied to data
         else :
-            if "pre_EE" in tag:
-                folderKey = "2022_Summer22"
-                L1Key = "Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFPuppi"
-                L2Key = "Summer22_22Sep2023_RunCD_V2_DATA_L2Relative_AK4PFPuppi"
-                L3Key = "Summer22_22Sep2023_RunCD_V2_DATA_L3Absolute_AK4PFPuppi"
-                L2L3Key = "Summer22_22Sep2023_RunCD_V2_DATA_L2L3Residual_AK4PFPuppi"
-                scaleTotalKey = None
-                smearKey = None
-                JERKey = None
-                JERsfKey = None
-            elif "2022E" in tag:
+            if "2022E" in tag:
                 folderKey = "2022_Summer22EE"
                 L1Key = "Summer22EE_22Sep2023_RunE_V2_DATA_L1FastJet_AK4PFPuppi"
                 L2Key = "Summer22EE_22Sep2023_RunE_V2_DATA_L2Relative_AK4PFPuppi"
@@ -71,11 +61,21 @@ def getJetCorrected(era, tag, is_mc, overwritePt=True) :
                 smearKey = None
                 JERKey = None
                 JERsfKey = None
+            elif not "EE" in tag:
+                folderKey = "2022_Summer22"
+                L1Key = "Summer22_22Sep2023_RunCD_V2_DATA_L1FastJet_AK4PFPuppi"
+                L2Key = "Summer22_22Sep2023_RunCD_V2_DATA_L2Relative_AK4PFPuppi"
+                L3Key = "Summer22_22Sep2023_RunCD_V2_DATA_L3Absolute_AK4PFPuppi"
+                L2L3Key = "Summer22_22Sep2023_RunCD_V2_DATA_L2L3Residual_AK4PFPuppi"
+                scaleTotalKey = None
+                smearKey = None
+                JERKey = None
+                JERsfKey = None
             else:
                 raise ValueError("getJetCorrected: tag", era, "not supported")
     elif era == 2023:
         if is_mc :
-            if "pre_BPix" in tag:
+            if not "BPix" in tag:
                 folderKey = "2023_Summer23"
                 L1Key = "Summer23Prompt23_V2_MC_L1FastJet_AK4PFPuppi"
                 L2Key = "Summer23Prompt23_V2_MC_L2Relative_AK4PFPuppi"
@@ -98,7 +98,7 @@ def getJetCorrected(era, tag, is_mc, overwritePt=True) :
         ## Data
         ## JER are not applied to data
         else :
-            if "pre_BPix" in tag:
+            if not "BPix" in tag:
                 folderKey = "2023_Summer23"
                 L1Key = "Summer23Prompt23_V2_DATA_L1FastJet_AK4PFPuppi"
                 L2Key = "Summer23Prompt23_V2_DATA_L2Relative_AK4PFPuppi"
@@ -124,7 +124,7 @@ def getJetCorrected(era, tag, is_mc, overwritePt=True) :
 
     print("***jetJERC: era:", era, "tag:", tag, "is MC:", is_mc, "overwritePt:", overwritePt, "json_JERC:", json_JERC, "json_JERsmear:", json_JERsmear)
     # Determine usePhiDependentJEC based on the tag
-    usePhiDependentJEC = "post_BPix" in tag # True if "post_BPix" is in tag, False otherwise
+    usePhiDependentJEC = "BPix" in tag # True if "post_BPix" is in tag, False otherwise
     # Apply run-dependent JEC only for 2023 data (not MC)
     useRunDependentJEC = (era == 2023) and (not is_mc)
 

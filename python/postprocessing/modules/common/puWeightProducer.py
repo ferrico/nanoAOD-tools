@@ -207,3 +207,43 @@ puWeight_UL2018 = lambda: puWeightProducer(pufile_mcUL2018,
                                            doSysVar=True)
 puAutoWeight_UL2018 = lambda: puWeightProducer(
     "auto", pufile_dataUL2018, "pu_mc", "pileup", verbose=False)
+
+
+puWeight_2022 = lambda : puWeightProducer(pufile_2022,
+                                          pufile_2022,
+                                          "MC_out_of_the_box",
+                                          "Data",
+                                          verbose=False,
+                                          doSysVar=True)
+
+def puWeight(era, data_tag):
+    print("***puWeight: era", era, "dataTag:", data_tag)
+    if era == 2016:
+        return puWeight_UL2016()
+    elif era == 2017 :
+        return puWeight_UL2017()
+    elif era == 2018 :
+        return puWeight_UL2018()
+    elif era == 2022 :
+#        return puWeight_2022() # Merged pre and postEE - obsolete
+
+        from PhysicsTools.NATModules.modules.puWeightProducer import puWeightProducer as puWeightProducer_corrlib
+        if "pre_EE" in data_tag :
+            json = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/analysis/nanoAOD_skim/data/puWeights_2022_Summer22.json.gz" % os.environ['CMSSW_BASE']
+            key = "Collisions2022_355100_357900_eraBCD_GoldenJson"
+        else :
+            json = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/analysis/nanoAOD_skim/data/puWeights_2022_Summer22EE.json.gz" % os.environ['CMSSW_BASE']
+            key = "Collisions2022_359022_362760_eraEFG_GoldenJson"
+        print("***puWeight: era:", era, "tag:", data_tag, "json:", json, "key:", key)
+        return puWeightProducer_corrlib(json, key)
+
+    elif era == 2023 :
+        from PhysicsTools.NATModules.modules.puWeightProducer import puWeightProducer as puWeightProducer_corrlib
+        if "pre_BPix" in data_tag :
+            json = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/analysis/nanoAOD_skim/data/puWeights_2023_Summer23preBPix.json.gz" % os.environ['CMSSW_BASE']
+            key = "Collisions2023_366403_369802_eraBC_GoldenJson"
+        else :
+            json = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/analysis/nanoAOD_skim/data/puWeights_2023_Summer23postBPix.json.gz" % os.environ['CMSSW_BASE']
+            key = "Collisions2023_369803_370790_eraD_GoldenJson"
+        print("***puWeight: era:", era, "tag:", data_tag, "json:", json, "key:", key)
+        return puWeightProducer_corrlib(json, key)

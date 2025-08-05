@@ -7,7 +7,7 @@ def getJetVetoMap(era, tag) :
         raise ValueError("getJetvetoMap: Era", era, "not supported")
 
     if era == 2022:
-            if "pre_EE" in tag:
+            if not "EE" in tag:
                 folderKey = "2022_Summer22"
                 corrName = "Summer22_23Sep2023_RunCD_V1"
             else:
@@ -15,7 +15,7 @@ def getJetVetoMap(era, tag) :
                 corrName = "Summer22EE_23Sep2023_RunEFG_V1"
     
     elif era == 2023:
-            if "pre_BPix" in tag:
+            if not "BPix" in tag:
                 folderKey = "2023_Summer23"
                 corrName = "Summer23Prompt23_RunC_V1"
             else:
