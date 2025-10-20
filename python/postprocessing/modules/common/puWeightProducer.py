@@ -217,6 +217,8 @@ puWeight_2022 = lambda : puWeightProducer(pufile_2022,
                                           doSysVar=True)
 
 def puWeight(era, data_tag):
+    from PhysicsTools.NATModules.modules.puWeightProducer import puWeightProducer as puWeightProducer_corrlib
+
     print("***puWeight: era", era, "dataTag:", data_tag)
     if era == 2016:
         return puWeight_UL2016()
@@ -225,25 +227,30 @@ def puWeight(era, data_tag):
     elif era == 2018 :
         return puWeight_UL2018()
     elif era == 2022 :
-#        return puWeight_2022() # Merged pre and postEE - obsolete
-
-        from PhysicsTools.NATModules.modules.puWeightProducer import puWeightProducer as puWeightProducer_corrlib
         if "pre_EE" in data_tag :
-            json = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/analysis/nanoAOD_skim/data/puWeights_2022_Summer22.json.gz" % os.environ['CMSSW_BASE']
+            json = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/2022_Summer22/puWeights.json.gz"
             key = "Collisions2022_355100_357900_eraBCD_GoldenJson"
         else :
-            json = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/analysis/nanoAOD_skim/data/puWeights_2022_Summer22EE.json.gz" % os.environ['CMSSW_BASE']
+            json = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/2022_Summer22EE/puWeights.json.gz"
             key = "Collisions2022_359022_362760_eraEFG_GoldenJson"
-        print("***puWeight: era:", era, "tag:", data_tag, "json:", json, "key:", key)
-        return puWeightProducer_corrlib(json, key)
+        #print("***puWeight: era:", era, "tag:", data_tag, "json:", json, "key:", key)
+        #return puWeightProducer_corrlib(json, key)
 
     elif era == 2023 :
-        from PhysicsTools.NATModules.modules.puWeightProducer import puWeightProducer as puWeightProducer_corrlib
         if "pre_BPix" in data_tag :
-            json = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/analysis/nanoAOD_skim/data/puWeights_2023_Summer23preBPix.json.gz" % os.environ['CMSSW_BASE']
+            json = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/2023_Summer23/puWeights.json.gz"
             key = "Collisions2023_366403_369802_eraBC_GoldenJson"
         else :
-            json = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/analysis/nanoAOD_skim/data/puWeights_2023_Summer23postBPix.json.gz" % os.environ['CMSSW_BASE']
+            json = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/LUM/2023_Summer23BPix/puWeights.json.gz"
             key = "Collisions2023_369803_370790_eraD_GoldenJson"
         print("***puWeight: era:", era, "tag:", data_tag, "json:", json, "key:", key)
         return puWeightProducer_corrlib(json, key)
+    elif era == 2024:
+        json = "%s/src/PhysicsTools/NanoAODTools/python/postprocessing/analysis/nanoAOD_skim/data/"
+        key = ""
+    else:
+        raise ValueError(f"Era {era} not supported yet")
+
+    print("***puWeight: era:", era, "tag:", data_tag, "json:", json, "key:", key)
+    return puWeightProducer_corrlib(json, key)
+
